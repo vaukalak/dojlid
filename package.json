@@ -1,25 +1,29 @@
 {
   "name": "dojlid",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "./dist/index.js",
   "repository": "https://github.com/vaukalak/dojlid.git",
   "types": "./dist/index.d.ts",
   "license": "MIT",
+  "files": [
+    "cli.js",
+    "dist"
+  ],
   "author": {
     "email": "lahmataja.pa4vara@gmail.com",
     "name": "vaukalak"
   },
-  "devDependencies": {},
-  "dependencies": {
+  "devDependencies": {
     "prettier": "^2.2.1",
-    "react": "^17.0.2",
-    "styled-components": "^5.2.1",
+    "ts-node": "^9.1.1"
+  },
+  "dependencies": {
     "ts-morph": "^10.0.2",
-    "ts-node": "^9.1.1",
     "typescript": "^4.2.3"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "yarn build"
   },
   "bin": {
     "dojlid": "./cli.js"
