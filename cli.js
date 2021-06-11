@@ -14,6 +14,9 @@ function* getPreset(config) {
 
 function* dojlidWorker({ config }) {
   const preset = yield* getPreset(config);
+  if (preset.install) {
+    yield* preset.install();
+  }
   const setup = yield query("setup", { type: "boolean" }, "Is setup?", ["interactive-cli"]);
   if (setup) {
     preset.commands["setup"]();
@@ -88,10 +91,11 @@ const interactiveCliProvider = (context) => {
   };
 };
 
-const runWorker = async (worker) => {
+const runWorker = async (worker, context) => {
   let next = worker.next();
   while (true) {
     if (next.done) {
+      return next.value;
       break;
     }
     const nextValue = await runEffect(next.value, context);
@@ -117,12 +121,13 @@ const runEffect = async (effect, context) => {
     case "SUBSCRIBE": {
       const eventSubscriptions = context.subscriptions[effect.event] || [];
       eventSubscriptions.push(effect.handler);
+      context.subscriptions[effect.event] = eventSubscriptions;
       break;
     }
     case "DISPATCH": {
-      await Promise.all(
-        context.subscriptions[effect.event].map(
-          subscription => runWorker(subscription.handler())
+      return await Promise.all(
+        (context.subscriptions[effect.event] || []).map(
+          subscription => runWorker(subscription(effect.payload), context)
         )
       );
       break;
@@ -131,7 +136,7 @@ const runEffect = async (effect, context) => {
 }
 
 const runDojlid = async (context) => {
-  await runWorker(dojlidWorker(context));
+  await runWorker(dojlidWorker(context), context);
 };
 
 (async () => {
